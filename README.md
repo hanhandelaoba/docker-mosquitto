@@ -53,7 +53,12 @@ As an example this how you run the container with systemd. The example uses a do
 
     [Service]
     Restart=always
-    ExecStart=/usr/bin/docker run --mount source=/opt/mqtt/config,target=/mqtt/config,readonly -v /srv/mqtt/log:/mqtt/log -v mqtt_data:/mqtt/data/ -p 1883:1883 -p 8883:8883 -p 127.0.0.1:9001:9001 --name mqtt hanhandelaoba/mosquitto
+    ExecStart=/usr/bin/docker run \
+    --mount source=/opt/mqtt/config,target=/mqtt/config,readonly \
+    --mount source=/var/log/mqtt,target=/mqtt/log \
+    --mount source=mqtt_data,target=/mqtt/data \
+    -p 1883:1883 -p 8883:8883 -p 127.0.0.1:9001:9001 \
+    --name mqtt hanhandelaoba/mosquitto
     ExecStop=/usr/bin/docker stop -t 2 mqtt
     ExecStopPost=/usr/bin/docker rm -f mqtt
 
