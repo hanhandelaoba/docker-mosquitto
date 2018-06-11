@@ -23,11 +23,11 @@ Alternatively you can use volumes to make the changes persistent and change the 
     # into /opt/mqtt/config. Change them as needed for your
     # particular needs.
 
-    docker run -it -p 1883:1883 -p 9001:9001 \
-    --mount source=/opt/mqtt/config,target=/mqtt/config,readonly \
-    --mount source=/var/log/mqtt,target=/mqtt/log \
-    --mount source=/opt/mqtt/data,target=/mqtt/data \
-    --name mqtt hanhandelaoba/mosquitto
+    docker run -it -p 1883:1883 -p 8883:8883 -p 9001:9001 \
+    --mount type=bind,source=/opt/mqtt/config,target=/mqtt/config,readonly \
+    --mount type=bind,source=/var/log/mqtt,target=/mqtt/log \
+    --mount type=bind,source=/opt/mqtt/data,target=/mqtt/data \
+    --name mqtt mosquitto:v1.4.15
 
 Volumes: /mqtt/config, /mqtt/data and /mqtt/log
 
@@ -38,12 +38,13 @@ Using Docker Volumes for data persistence.
 Create a named volume:
 
     docker volume create --name mqtt_data
+    docker volume create --name mqtt_log
 
-Now it can be attached to docker by using `--mount source=mqtt_data,target=/mqtt/data` in the Example above. Be aware that the permissions within the volumes are most likely too restrictive.
+Now it can be attached to docker by using `--mount source=mqtt_data,target=/mqtt/data --mount source=mqtt_log,target=/mqtt/log` in the Example above. Be aware that the permissions within the volumes are most likely too restrictive.
 
 ## Start with systemd
 
-As an example this how you run the container with systemd. The example uses a docker volume named mqtt_data (see above).
+As an example this how you run the container with systemd. The example uses  docker volumes named mqtt_data and mqtt_log (see above).
 
     [Unit]
     Description=Mosquitto MQTT docker container
@@ -54,11 +55,11 @@ As an example this how you run the container with systemd. The example uses a do
     [Service]
     Restart=always
     ExecStart=/usr/bin/docker run \
-    --mount source=/opt/mqtt/config,target=/mqtt/config,readonly \
-    --mount source=/var/log/mqtt,target=/mqtt/log \
+    --mount type=bind,source=/opt/mqtt/config,target=/mqtt/config,readonly \
+    --mount source=mqtt_log,target=/mqtt/log \
     --mount source=mqtt_data,target=/mqtt/data \
-    -p 1883:1883 -p 8883:8883 -p 127.0.0.1:9001:9001 \
-    --name mqtt hanhandelaoba/mosquitto
+    -p 1883:1883 -p 8883:8883 -p 9001:9001 \
+    --name mqtt mosquitto:v1.4.15
     ExecStop=/usr/bin/docker stop -t 2 mqtt
     ExecStopPost=/usr/bin/docker rm -f mqtt
 
@@ -69,7 +70,7 @@ As an example this how you run the container with systemd. The example uses a do
 
     git clone https://github.com/hanhandelaoba/docker-mosquitto.git
     cd docker-mosquitto
-    docker build .
+    docker build -t mosquitto:v1.4.15 .
 
 ## Contact
 
